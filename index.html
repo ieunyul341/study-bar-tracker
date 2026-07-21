@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <title>오늘한칸 | 공부·습관·투두 기록</title>
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --paper: #ffffff;
+      --text: #171717;
+      --muted: #6b7280;
+      --line: #d1d5db;
+      --line-dark: #9ca3af;
+      --radius: 18px;
+      --shadow: 0 12px 30px rgba(0,0,0,.07);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      width: min(1220px, calc(100% - 24px));
+      margin: 24px auto 48px;
+    }
+
+    .sheet {
+      background: var(--paper);
+      border: 1px solid var(--line-dark);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 28px 28px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      letter-spacing: -.04em;
+    }
+
+    .title-wrap p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .mode-switch {
+      display: inline-flex;
+      padding: 4px;
+      background: #eef0f3;
+      border-radius: 999px;
+      gap: 4px;
+    }
+
+    .mode-switch button {
+      border: 0;
+      background: transparent;
+      padding: 9px 15px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .mode-switch button.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr auto;
+      gap: 12px;
+      margin-top: 24px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .primary-btn, .secondary-btn, .danger-btn {
+      border: 0;
+      border-radius: 11px;
+      min-height: 44px;
+      padding: 0 16px;
+      font-weight: 800;
+    }
+
+    .primary-btn { background: #111827; color: white; }
+    .secondary-btn { background: #eef0f3; color: var(--text); }
+    .danger-btn { background: #fee2e2; color: #b91c1c; }
+
+    .summary {
+      padding: 18px 28px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fafafa;
+    }
+
+    .summary-card .label { color: var(--muted); font-size: 13px; }
+    .summary-card .value {
+      display: block;
+      margin-top: 5px;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .section {
+      padding: 26px 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 23px;
+    }
+
+    .section-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .weekly-goal-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .weekly-goal-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .weekly-goal-card label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 9px;
+      font-weight: 900;
+    }
+
+    .weekly-goal-card input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .weekly-goal-help {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .bars-scroll { overflow-x: auto; }
+    .bars-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 20px;
+      min-width: 830px;
+    }
+
+    .subject-card {
+      text-align: center;
+      border-radius: 16px;
+      padding: 14px 10px 16px;
+      transition: .2s ease;
+    }
+
+    .subject-card:hover { background: #fafafa; }
+    .subject-icon { font-size: 34px; line-height: 1; }
+    .subject-name { margin: 8px 0 2px; font-size: 20px; font-weight: 900; }
+    .subject-hours { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+    .bar-area {
+      height: 500px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding-left: 38px;
+    }
+
+    .scale {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .scale span {
+      position: absolute;
+      right: 8px;
+      transform: translateY(50%);
+    }
+
+    .bar {
+      position: relative;
+      width: 58px;
+      height: 100%;
+      border: 2px solid #555;
+      background:
+        repeating-linear-gradient(
+          to top,
+          transparent 0,
+          transparent calc(2% - 1px),
+          #b7b7b7 calc(2% - 1px),
+          #b7b7b7 2%
+        );
+      overflow: hidden;
+    }
+
+    .target-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0;
+      opacity: .22;
+      transition: height .45s ease;
+      z-index: 0;
+    }
+
+    .fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0;
+      transition: height .45s ease;
+      z-index: 1;
+    }
+
+    .bar-lines {
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          to top,
+          transparent 0,
+          transparent calc(2% - 1px),
+          rgba(255,255,255,.55) calc(2% - 1px),
+          rgba(255,255,255,.55) 2%
+        );
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .subject-actions {
+      display: flex;
+      gap: 7px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .small-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 9px;
+      padding: 7px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .habit-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .habit-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .habit-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .habit-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+    }
+
+    .habit-count { color: var(--muted); font-size: 13px; }
+
+    .habit-progress {
+      height: 12px;
+      border-radius: 999px;
+      background: #eceff3;
+      overflow: hidden;
+      margin: 14px 0 12px;
+    }
+
+    .habit-progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      transition: width .3s ease;
+    }
+
+    .habit-days {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+
+    .habit-day {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 34px;
+      background: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .habit-day.checked {
+      color: white;
+      border-color: transparent;
+    }
+
+    .habit-more {
+      margin-top: 10px;
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      border-radius: 9px;
+      min-height: 36px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .todo-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .todo-editor, .todo-list-wrap {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .todo-editor h3, .todo-list-wrap h3 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+
+    .todo-list { display: grid; gap: 8px; }
+
+    .todo-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px 11px;
+    }
+
+    .todo-item.done .todo-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .todo-delete {
+      border: 0;
+      background: transparent;
+      color: #b91c1c;
+      font-weight: 800;
+    }
+
+    .records {
+      padding: 22px 28px 28px;
+    }
+
+    .records-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .records h2 { margin: 0; font-size: 20px; }
+    .record-list { display: grid; gap: 8px; }
+
+    .record-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      display: grid;
+      grid-template-columns: 110px 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      background: #fff;
+    }
+
+    .record-date { font-size: 13px; color: var(--muted); }
+    .record-subject { font-weight: 800; }
+    .record-time { font-weight: 900; }
+    .record-delete {
+      border: 0;
+      background: transparent;
+      color: #b91c1c;
+      font-weight: 800;
+    }
+
+    .empty {
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    .guide {
+      margin: 0 28px 28px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      color: #3f3f46;
+      font-size: 14px;
+    }
+
+    .guide strong {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 8px;
+      background: #111827;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    dialog {
+      width: min(500px, calc(100% - 24px));
+      border: 0;
+      border-radius: 18px;
+      padding: 0;
+      box-shadow: 0 24px 80px rgba(0,0,0,.25);
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,.45); }
+    .modal { padding: 24px; }
+    .modal h2 { margin: 0 0 18px; }
+    .modal-grid { display: grid; gap: 14px; }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .notice { margin-top: 12px; min-height: 20px; font-size: 13px; color: #b91c1c; }
+
+    @media (max-width: 900px) {
+      .weekly-goal-grid { grid-template-columns: 1fr 1fr; }
+      .habit-grid { grid-template-columns: 1fr 1fr; }
+      .todo-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .app { width: min(100% - 12px, 1220px); margin-top: 6px; }
+      .sheet { border-radius: 14px; }
+      .header { padding: 20px 16px 16px; }
+      .header-top { flex-direction: column; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .controls .field:first-child { grid-column: 1 / -1; }
+      .controls .primary-btn { width: 100%; }
+      .summary { grid-template-columns: 1fr 1fr; padding: 14px 16px; }
+      .section { padding: 20px 16px; }
+      .weekly-goal-grid { grid-template-columns: 1fr; }
+      .habit-grid { grid-template-columns: 1fr; }
+      .records { padding: 18px 16px 22px; }
+      .record-item { grid-template-columns: 82px 1fr auto; }
+      .record-delete { grid-column: 3; }
+      .guide { margin: 0 16px 18px; grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="sheet">
+      <header class="header">
+        <div class="header-top">
+          <div class="title-wrap">
+            <h1>오늘한칸</h1>
+            <p>공부 시간, 습관, 오늘 할 일을 한 화면에서 기록해요.</p>
+          </div>
+          <div class="mode-switch" aria-label="보기 방식 선택">
+            <button id="monthlyBtn" class="active" type="button">월간</button>
+            <button id="weeklyBtn" type="button">주간</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="field">
+            <label for="studentName">이름</label>
+            <input id="studentName" type="text" placeholder="이름 또는 닉네임" />
+          </div>
+          <div class="field">
+            <label for="periodPicker">보고 싶은 기간</label>
+            <input id="periodPicker" type="month" />
+          </div>
+          <div class="field">
+            <label for="goalHours">과목별 목표 시간</label>
+            <select id="goalHours">
+              <option value="20">20시간</option>
+              <option value="30">30시간</option>
+              <option value="40">40시간</option>
+              <option value="50" selected>50시간</option>
+              <option value="60">60시간</option>
+              <option value="80">80시간</option>
+              <option value="100">100시간</option>
+            </select>
+          </div>
+          <button id="addRecordBtn" class="primary-btn" type="button">+ 공부 기록</button>
+        </div>
+      </header>
+
+      <section class="summary" aria-label="공부 요약">
+        <div class="summary-card">
+          <span class="label">선택 기간</span>
+          <strong id="summaryPeriod" class="value">-</strong>
+        </div>
+        <div class="summary-card">
+          <span class="label">총 공부 시간</span>
+          <strong id="summaryTotal" class="value">0시간</strong>
+        </div>
+        <div class="summary-card">
+          <span class="label">공부한 날</span>
+          <strong id="summaryDays" class="value">0일</strong>
+        </div>
+        <div class="summary-card">
+          <span class="label">목표 달성률</span>
+          <strong id="summaryRate" class="value">0%</strong>
+        </div>
+      </section>
+
+      <section id="weeklyGoalSection" class="section" hidden>
+        <div class="section-head">
+          <div>
+            <h2>이번 주 과목별 목표</h2>
+            <p>과목마다 이번 주 목표 시간을 정하세요. 연한 막대는 목표, 진한 막대는 실제 공부 시간입니다.</p>
+          </div>
+        </div>
+        <div id="weeklyGoalGrid" class="weekly-goal-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <h2>공부 시간 막대</h2>
+            <p>월간은 전체 목표를, 주간은 과목별 이번 주 목표를 보여줍니다. 연한 색은 목표, 진한 색은 실제 공부 시간입니다.</p>
+          </div>
+        </div>
+        <div class="bars-scroll">
+          <div id="barsGrid" class="bars-grid"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <h2>습관 색칠 계획표</h2>
+            <p>월간은 기본 30칸, 주간은 7칸으로 표시됩니다. 버튼을 눌러 완료 체크하세요.</p>
+          </div>
+        </div>
+        <div id="habitGrid" class="habit-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <h2>오늘의 작은 투두리스트</h2>
+            <p>날짜별로 할 일을 따로 저장하고 완료 체크할 수 있어요.</p>
+          </div>
+        </div>
+
+        <div class="todo-layout">
+          <div class="todo-editor">
+            <h3>할 일 추가</h3>
+            <div class="field">
+              <label for="todoDate">날짜</label>
+              <input id="todoDate" type="date" />
+            </div>
+            <div class="field" style="margin-top:12px;">
+              <label for="todoText">할 일</label>
+              <textarea id="todoText" rows="3" maxlength="80" placeholder="예: 수학 오답 3문제 다시 풀기"></textarea>
+            </div>
+            <button id="addTodoBtn" class="primary-btn" type="button" style="width:100%;margin-top:12px;">투두 추가</button>
+          </div>
+
+          <div class="todo-list-wrap">
+            <h3 id="todoListTitle">선택한 기간의 할 일</h3>
+            <div id="todoList" class="todo-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="records">
+        <div class="records-header">
+          <h2>공부 기록</h2>
+          <button id="resetBtn" class="danger-btn" type="button">현재 기간 공부 기록 초기화</button>
+        </div>
+        <div id="recordList" class="record-list"></div>
+      </section>
+
+      <section class="guide">
+        <div>
+          <strong>기록 보관</strong><br />
+          주간 또는 월간에서 기간을 바꾸면 이미 끝난 기간의 공부 막대, 습관, 투두를 다시 볼 수 있습니다. 월간 습관표는 항상 30칸입니다.
+        </div>
+        <div>
+          <strong>저장 위치</strong><br />
+          모든 기록은 현재 브라우저에 자동 저장됩니다. 같은 기기와 브라우저에서 계속 확인하세요.
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="recordDialog">
+    <form id="recordForm" class="modal" method="dialog">
+      <h2>공부 시간 기록</h2>
+      <div class="modal-grid">
+        <div class="field">
+          <label for="recordDate">날짜</label>
+          <input id="recordDate" type="date" required />
+        </div>
+        <div class="field">
+          <label for="recordSubject">과목</label>
+          <select id="recordSubject" required></select>
+        </div>
+        <div class="field">
+          <label for="recordMinutes">공부 시간(분)</label>
+          <input id="recordMinutes" type="number" min="1" max="1440" step="1" placeholder="예: 50" required />
+        </div>
+        <div class="field">
+          <label for="recordMemo">한 줄 메모</label>
+          <input id="recordMemo" type="text" maxlength="50" placeholder="예: 수학 문제집 12쪽" />
+        </div>
+      </div>
+      <div id="formNotice" class="notice"></div>
+      <div class="modal-actions">
+        <button id="closeDialogBtn" class="secondary-btn" type="button">취소</button>
+        <button class="primary-btn" type="submit">기록 저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const SUBJECTS = [
+      { id: "korean", name: "국어", icon: "📖", color: "#ef4444" },
+      { id: "math", name: "수학", icon: "➗", color: "#3b82f6" },
+      { id: "english", name: "영어", icon: "ABC", color: "#8b5cf6" },
+      { id: "science", name: "과학", icon: "⚗️", color: "#10b981" },
+      { id: "social", name: "사회", icon: "🌏", color: "#f59e0b" }
+    ];
+
+    const HABITS = [
+      { id: "water", name: "물 마시기", icon: "💧", color: "#06b6d4" },
+      { id: "exercise", name: "운동", icon: "🏃", color: "#f97316" },
+      { id: "reading", name: "책 읽기", icon: "📚", color: "#22c55e" }
+    ];
+
+    const STORAGE_KEY = "today-one-block-v2";
+    const LEGACY_KEY = "today-one-block-v1";
+    const state = loadState();
+
+    const els = {
+      monthlyBtn: document.querySelector("#monthlyBtn"),
+      weeklyBtn: document.querySelector("#weeklyBtn"),
+      studentName: document.querySelector("#studentName"),
+      periodPicker: document.querySelector("#periodPicker"),
+      goalHours: document.querySelector("#goalHours"),
+      addRecordBtn: document.querySelector("#addRecordBtn"),
+      barsGrid: document.querySelector("#barsGrid"),
+      habitGrid: document.querySelector("#habitGrid"),
+      weeklyGoalSection: document.querySelector("#weeklyGoalSection"),
+      weeklyGoalGrid: document.querySelector("#weeklyGoalGrid"),
+      recordList: document.querySelector("#recordList"),
+      summaryPeriod: document.querySelector("#summaryPeriod"),
+      summaryTotal: document.querySelector("#summaryTotal"),
+      summaryDays: document.querySelector("#summaryDays"),
+      summaryRate: document.querySelector("#summaryRate"),
+      resetBtn: document.querySelector("#resetBtn"),
+      dialog: document.querySelector("#recordDialog"),
+      form: document.querySelector("#recordForm"),
+      recordDate: document.querySelector("#recordDate"),
+      recordSubject: document.querySelector("#recordSubject"),
+      recordMinutes: document.querySelector("#recordMinutes"),
+      recordMemo: document.querySelector("#recordMemo"),
+      closeDialogBtn: document.querySelector("#closeDialogBtn"),
+      formNotice: document.querySelector("#formNotice"),
+      todoDate: document.querySelector("#todoDate"),
+      todoText: document.querySelector("#todoText"),
+      addTodoBtn: document.querySelector("#addTodoBtn"),
+      todoList: document.querySelector("#todoList"),
+      todoListTitle: document.querySelector("#todoListTitle")
+    };
+
+    init();
+
+    function init() {
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+      state.mode ??= "monthly";
+      state.period ??= currentMonth;
+      state.goalHours ??= 50;
+      state.name ??= "";
+      state.records ??= [];
+      state.habitChecks ??= {};
+      state.todos ??= [];
+      state.weeklyGoals ??= {};
+
+      els.studentName.value = state.name;
+      els.periodPicker.value = state.period;
+      els.goalHours.value = String(state.goalHours);
+      els.recordDate.value = toDateInputValue(now);
+      els.todoDate.value = toDateInputValue(now);
+      els.recordSubject.innerHTML = SUBJECTS
+        .map(subject => `<option value="${subject.id}">${subject.name}</option>`)
+        .join("");
+
+      bindEvents();
+      applyModeUI();
+      render();
+    }
+
+    function bindEvents() {
+      els.monthlyBtn.addEventListener("click", () => setMode("monthly"));
+      els.weeklyBtn.addEventListener("click", () => setMode("weekly"));
+
+      els.studentName.addEventListener("input", () => {
+        state.name = els.studentName.value.trim();
+        saveState();
+      });
+
+      els.periodPicker.addEventListener("change", () => {
+        state.period = els.periodPicker.value;
+        saveState();
+        render();
+      });
+
+      els.goalHours.addEventListener("change", () => {
+        state.goalHours = Number(els.goalHours.value);
+        saveState();
+        render();
+      });
+
+      els.addRecordBtn.addEventListener("click", () => {
+        els.formNotice.textContent = "";
+        els.recordMinutes.value = "";
+        els.recordMemo.value = "";
+        els.recordDate.value = getDefaultRecordDate();
+        els.dialog.showModal();
+      });
+
+      els.closeDialogBtn.addEventListener("click", () => els.dialog.close());
+      els.form.addEventListener("submit", event => {
+        event.preventDefault();
+        addRecord();
+      });
+
+      els.resetBtn.addEventListener("click", resetCurrentPeriod);
+      els.addTodoBtn.addEventListener("click", addTodo);
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      if (mode === "monthly") {
+        els.periodPicker.type = "month";
+        if (!/^\d{4}-\d{2}$/.test(state.period)) {
+          state.period = state.period.slice(0, 7);
+        }
+      } else {
+        const today = new Date();
+        els.periodPicker.type = "week";
+        if (!/^\d{4}-W\d{2}$/.test(state.period)) {
+          state.period = getISOWeekValue(today);
+        }
+      }
+      els.periodPicker.value = state.period;
+      saveState();
+      applyModeUI();
+      render();
+    }
+
+    function applyModeUI() {
+      const monthly = state.mode === "monthly";
+      els.monthlyBtn.classList.toggle("active", monthly);
+      els.weeklyBtn.classList.toggle("active", !monthly);
+      els.periodPicker.type = monthly ? "month" : "week";
+      els.periodPicker.value = state.period;
+    }
+
+    function addRecord() {
+      const date = els.recordDate.value;
+      const subjectId = els.recordSubject.value;
+      const minutes = Number(els.recordMinutes.value);
+      const memo = els.recordMemo.value.trim();
+
+      if (!date || !subjectId || !Number.isFinite(minutes) || minutes < 1) {
+        els.formNotice.textContent = "날짜, 과목, 공부 시간을 확인해 주세요.";
+        return;
+      }
+
+      state.records.push({
+        id: makeId(),
+        date,
+        subjectId,
+        minutes,
+        memo,
+        createdAt: Date.now()
+      });
+
+      saveState();
+      els.dialog.close();
+      render();
+    }
+
+    function addTodo() {
+      const date = els.todoDate.value;
+      const text = els.todoText.value.trim();
+
+      if (!date || !text) {
+        alert("날짜와 할 일을 입력해 주세요.");
+        return;
+      }
+
+      state.todos.push({
+        id: makeId(),
+        date,
+        text,
+        done: false,
+        createdAt: Date.now()
+      });
+
+      els.todoText.value = "";
+      saveState();
+      renderTodos();
+    }
+
+    function render() {
+      const currentRecords = getCurrentRecords();
+      renderWeeklyGoals();
+      renderBars(currentRecords);
+      renderSummary(currentRecords);
+      renderRecords(currentRecords);
+      renderHabits();
+      renderTodos();
+    }
+
+    function renderWeeklyGoals() {
+      const isWeekly = state.mode === "weekly";
+      els.weeklyGoalSection.hidden = !isWeekly;
+
+      if (!isWeekly) {
+        els.weeklyGoalGrid.innerHTML = "";
+        return;
+      }
+
+      const goals = getWeeklyGoals();
+
+      els.weeklyGoalGrid.innerHTML = SUBJECTS.map(subject => `
+        <div class="weekly-goal-card">
+          <label for="goal-${subject.id}">
+            <span>${subject.icon}</span>
+            <span>${subject.name}</span>
+          </label>
+          <input
+            id="goal-${subject.id}"
+            class="weekly-goal-input"
+            data-subject="${subject.id}"
+            type="number"
+            min="0"
+            max="100"
+            step="0.5"
+            value="${goals[subject.id] ?? 0}"
+            aria-label="${subject.name} 주간 목표 시간"
+          />
+          <div class="weekly-goal-help">이번 주 목표 시간</div>
+        </div>
+      `).join("");
+
+      document.querySelectorAll(".weekly-goal-input").forEach(input => {
+        input.addEventListener("change", () => {
+          const subjectId = input.dataset.subject;
+          const value = Math.max(0, Number(input.value) || 0);
+          const key = state.period;
+          state.weeklyGoals[key] ??= {};
+          state.weeklyGoals[key][subjectId] = value;
+          saveState();
+          renderBars(getCurrentRecords());
+        });
+      });
+    }
+
+    function getWeeklyGoals() {
+      if (state.mode !== "weekly") return {};
+      return state.weeklyGoals[state.period] || {};
+    }
+
+    function renderBars(records) {
+      const totals = getSubjectTotals(records);
+      const weeklyGoals = getWeeklyGoals();
+
+      els.barsGrid.innerHTML = SUBJECTS.map(subject => {
+        const minutes = totals[subject.id] || 0;
+        const actualHours = minutes / 60;
+
+        const targetHours = state.mode === "weekly"
+          ? Number(weeklyGoals[subject.id] || 0)
+          : state.goalHours;
+
+        const scaleMax = state.mode === "weekly"
+          ? Math.max(10, targetHours, Math.ceil(actualHours / 5) * 5)
+          : state.goalHours;
+
+        const actualPercent = Math.min(100, (actualHours / scaleMax) * 100);
+        const targetPercent = Math.min(100, (targetHours / scaleMax) * 100);
+        const scaleValues = [100, 80, 60, 40, 20, 0];
+
+        const statusText = state.mode === "weekly"
+          ? `${formatMinutes(minutes)} / 목표 ${targetHours}시간`
+          : `${formatMinutes(minutes)} / ${state.goalHours}시간`;
+
+        return `
+          <article class="subject-card">
+            <div class="subject-icon">${subject.icon}</div>
+            <h3 class="subject-name">${subject.name}</h3>
+            <div class="subject-hours">${statusText}</div>
+            <div class="bar-area" aria-label="${subject.name} 실제 ${actualHours.toFixed(1)}시간, 목표 ${targetHours}시간">
+              <div class="scale">
+                ${scaleValues.map(value => `
+                  <span style="bottom:${value}%">${Math.round(scaleMax * value / 100)}</span>
+                `).join("")}
+              </div>
+              <div class="bar">
+                <div class="target-fill" style="height:${targetPercent}%;background:${subject.color};"></div>
+                <div class="fill" style="height:${actualPercent}%;background:${subject.color};"></div>
+                <div class="bar-lines"></div>
+              </div>
+            </div>
+            <div class="subject-actions">
+              <button class="small-btn quick-add" data-subject="${subject.id}" data-minutes="30" type="button">+30분</button>
+              <button class="small-btn quick-add" data-subject="${subject.id}" data-minutes="60" type="button">+1시간</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".quick-add").forEach(button => {
+        button.addEventListener("click", () => {
+          quickAdd(button.dataset.subject, Number(button.dataset.minutes));
+        });
+      });
+    }
+
+    function renderHabits() {
+      const dates = getHabitSlots();
+
+      els.habitGrid.innerHTML = HABITS.map(habit => {
+        const checkedCount = dates.filter(slot => isHabitChecked(habit.id, slot.key)).length;
+        const percent = dates.length ? Math.round((checkedCount / dates.length) * 100) : 0;
+
+        return `
+          <article class="habit-card">
+            <div class="habit-top">
+              <div class="habit-title"><span>${habit.icon}</span><span>${habit.name}</span></div>
+              <span class="habit-count">${checkedCount}/${dates.length}칸</span>
+            </div>
+            <div class="habit-progress">
+              <span style="width:${percent}%;background:${habit.color};"></span>
+            </div>
+            <div class="habit-days">
+              ${dates.map(slot => `
+                <button
+                  class="habit-day ${isHabitChecked(habit.id, slot.key) ? "checked" : ""}"
+                  data-habit="${habit.id}"
+                  data-date="${slot.key}"
+                  type="button"
+                  style="${isHabitChecked(habit.id, slot.key) ? `background:${habit.color}` : ""}"
+                  title="${slot.label}"
+                >${slot.number}</button>
+              `).join("")}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".habit-day").forEach(button => {
+        button.addEventListener("click", () => {
+          toggleHabit(button.dataset.habit, button.dataset.date);
+        });
+      });
+    }
+
+    function getHabitSlots() {
+      if (state.mode === "monthly") {
+        return Array.from({ length: 30 }, (_, index) => ({
+          number: index + 1,
+          key: `${state.period}:slot-${String(index + 1).padStart(2, "0")}`,
+          label: `${formatPeriodLabel()} 습관 ${index + 1}번째 칸`
+        }));
+      }
+
+      return getDatesForCurrentPeriod().map((date, index) => ({
+        number: index + 1,
+        key: date,
+        label: date
+      }));
+    }
+
+    function toggleHabit(habitId, date) {
+      const key = `${habitId}:${date}`;
+      state.habitChecks[key] = !state.habitChecks[key];
+      if (!state.habitChecks[key]) delete state.habitChecks[key];
+      saveState();
+      renderHabits();
+    }
+
+    function renderTodos() {
+      const todos = state.todos
+        .filter(todo => isRecordInCurrentPeriod(todo.date))
+        .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt);
+
+      els.todoListTitle.textContent = `${formatPeriodLabel()} 할 일`;
+
+      if (!todos.length) {
+        els.todoList.innerHTML = `<div class="empty">이 기간에 등록된 할 일이 없어요.</div>`;
+        return;
+      }
+
+      els.todoList.innerHTML = todos.map(todo => `
+        <div class="todo-item ${todo.done ? "done" : ""}">
+          <input class="todo-check" data-id="${todo.id}" type="checkbox" ${todo.done ? "checked" : ""} aria-label="완료 체크" />
+          <div>
+            <div class="todo-text">${escapeHtml(todo.text)}</div>
+            <div class="record-date">${todo.date}</div>
+          </div>
+          <button class="todo-delete" data-id="${todo.id}" type="button">삭제</button>
+        </div>
+      `).join("");
+
+      document.querySelectorAll(".todo-check").forEach(input => {
+        input.addEventListener("change", () => {
+          const todo = state.todos.find(item => item.id === input.dataset.id);
+          if (todo) todo.done = input.checked;
+          saveState();
+          renderTodos();
+        });
+      });
+
+      document.querySelectorAll(".todo-delete").forEach(button => {
+        button.addEventListener("click", () => {
+          state.todos = state.todos.filter(todo => todo.id !== button.dataset.id);
+          saveState();
+          renderTodos();
+        });
+      });
+    }
+
+    function renderSummary(records) {
+      const totalMinutes = records.reduce((sum, record) => sum + record.minutes, 0);
+      const distinctDays = new Set(records.map(record => record.date)).size;
+      const totalGoalMinutes = state.goalHours * 60 * SUBJECTS.length;
+      const rate = Math.min(100, Math.round((totalMinutes / totalGoalMinutes) * 100));
+
+      els.summaryPeriod.textContent = formatPeriodLabel();
+      els.summaryTotal.textContent = formatMinutes(totalMinutes);
+      els.summaryDays.textContent = `${distinctDays}일`;
+      els.summaryRate.textContent = `${rate}%`;
+    }
+
+    function renderRecords(records) {
+      const sorted = [...records].sort((a, b) =>
+        b.date.localeCompare(a.date) || b.createdAt - a.createdAt
+      );
+
+      if (!sorted.length) {
+        els.recordList.innerHTML = `<div class="empty">아직 공부 기록이 없어요.</div>`;
+        return;
+      }
+
+      els.recordList.innerHTML = sorted.map(record => {
+        const subject = SUBJECTS.find(item => item.id === record.subjectId);
+        return `
+          <div class="record-item">
+            <span class="record-date">${record.date}</span>
+            <span class="record-subject" style="color:${subject?.color || "#111"}">${subject?.icon || ""} ${subject?.name || "기타"}${record.memo ? ` · ${escapeHtml(record.memo)}` : ""}</span>
+            <span class="record-time">${formatMinutes(record.minutes)}</span>
+            <button class="record-delete" data-id="${record.id}" type="button">삭제</button>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".record-delete").forEach(button => {
+        button.addEventListener("click", () => deleteRecord(button.dataset.id));
+      });
+    }
+
+    function getCurrentRecords() {
+      return state.records.filter(record => isRecordInCurrentPeriod(record.date));
+    }
+
+    function isRecordInCurrentPeriod(dateString) {
+      if (state.mode === "monthly") return dateString.startsWith(state.period);
+
+      const [yearText, weekText] = state.period.split("-W");
+      const targetYear = Number(yearText);
+      const targetWeek = Number(weekText);
+      const date = new Date(`${dateString}T12:00:00`);
+      const { year, week } = getISOWeek(date);
+      return year === targetYear && week === targetWeek;
+    }
+
+    function getDatesForCurrentPeriod() {
+      if (state.mode === "monthly") {
+        const [year, month] = state.period.split("-").map(Number);
+        const days = new Date(year, month, 0).getDate();
+        return Array.from({ length: days }, (_, index) =>
+          `${year}-${String(month).padStart(2, "0")}-${String(index + 1).padStart(2, "0")}`
+        );
+      }
+
+      const [yearText, weekText] = state.period.split("-W");
+      const monday = getDateOfISOWeek(Number(weekText), Number(yearText));
+      return Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + index);
+        return toDateInputValue(date);
+      });
+    }
+
+    function isHabitChecked(habitId, date) {
+      return Boolean(state.habitChecks[`${habitId}:${date}`]);
+    }
+
+    function getSubjectTotals(records) {
+      return records.reduce((acc, record) => {
+        acc[record.subjectId] = (acc[record.subjectId] || 0) + record.minutes;
+        return acc;
+      }, {});
+    }
+
+    function quickAdd(subjectId, minutes) {
+      state.records.push({
+        id: makeId(),
+        date: getDefaultRecordDate(),
+        subjectId,
+        minutes,
+        memo: "",
+        createdAt: Date.now()
+      });
+      saveState();
+      render();
+    }
+
+    function deleteRecord(id) {
+      state.records = state.records.filter(record => record.id !== id);
+      saveState();
+      render();
+    }
+
+    function resetCurrentPeriod() {
+      const count = getCurrentRecords().length;
+      if (!count) return;
+      if (!confirm(`${formatPeriodLabel()}의 공부 기록 ${count}개를 모두 삭제할까요?`)) return;
+
+      state.records = state.records.filter(record => !isRecordInCurrentPeriod(record.date));
+      saveState();
+      render();
+    }
+
+    function formatPeriodLabel() {
+      if (state.mode === "monthly") {
+        const [year, month] = state.period.split("-");
+        return `${year}년 ${Number(month)}월`;
+      }
+      const [year, week] = state.period.split("-W");
+      return `${year}년 ${Number(week)}주차`;
+    }
+
+    function formatMinutes(minutes) {
+      const hours = Math.floor(minutes / 60);
+      const rest = minutes % 60;
+      if (hours && rest) return `${hours}시간 ${rest}분`;
+      if (hours) return `${hours}시간`;
+      return `${rest}분`;
+    }
+
+    function getDefaultRecordDate() {
+      const today = new Date();
+      if (state.mode === "monthly") {
+        const currentMonth = toDateInputValue(today).slice(0, 7);
+        return currentMonth === state.period ? toDateInputValue(today) : `${state.period}-01`;
+      }
+
+      const dates = getDatesForCurrentPeriod();
+      const todayText = toDateInputValue(today);
+      return dates.includes(todayText) ? todayText : dates[0];
+    }
+
+    function getISOWeekValue(date) {
+      const { year, week } = getISOWeek(date);
+      return `${year}-W${String(week).padStart(2, "0")}`;
+    }
+
+    function getISOWeek(date) {
+      const temp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = temp.getUTCDay() || 7;
+      temp.setUTCDate(temp.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(temp.getUTCFullYear(), 0, 1));
+      const week = Math.ceil((((temp - yearStart) / 86400000) + 1) / 7);
+      return { year: temp.getUTCFullYear(), week };
+    }
+
+    function getDateOfISOWeek(week, year) {
+      const simple = new Date(year, 0, 1 + (week - 1) * 7);
+      const day = simple.getDay();
+      const monday = new Date(simple);
+      if (day <= 4) monday.setDate(simple.getDate() - simple.getDay() + 1);
+      else monday.setDate(simple.getDate() + 8 - simple.getDay());
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    }
+
+    function toDateInputValue(date) {
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 10);
+    }
+
+    function makeId() {
+      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[char]);
+    }
+
+    function loadState() {
+      try {
+        const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (current) return current;
+
+        const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY));
+        if (legacy) {
+          return {
+            ...legacy,
+            habitChecks: {},
+            todos: []
+          };
+        }
+      } catch {}
+      return {};
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+  </script>
+</body>
+</html>
